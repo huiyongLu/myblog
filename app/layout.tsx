@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import Nav from "@/components/nav";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "../styles/globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-}) as { variable: string };
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,9 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} antialiased bg-[#f7eddc] text-slate-800 transition-colors duration-300 dark:bg-[#060e1f] dark:text-slate-100`}
-      >
+      <body className="antialiased bg-[#f7eddc] text-slate-800 transition-colors duration-300 dark:bg-[#060e1f] dark:text-slate-100">
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
             <Nav />
