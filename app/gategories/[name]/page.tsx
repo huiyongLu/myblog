@@ -2,8 +2,8 @@ import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
-
-const supabase = createServerClient();
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type BlogPost = {
   id: string;
@@ -48,6 +48,8 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { name } = params;
   const categoryName = decodeURIComponent(name);
+
+  const supabase = createServerClient();
 
   const { data, error } = await supabase
     .from("posts")
