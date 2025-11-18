@@ -73,17 +73,17 @@ export async function createUserProfileFromAuth(authUser: {
     id: authUser.id,
     email: authUser.email || "",
     username:
-      authUser.user_metadata?.user_name ||
-      authUser.user_metadata?.name ||
+      authUser.user_metadata?.user_name ??
+      authUser.user_metadata?.name ??
       authUser.email?.split("@")[0],
     full_name:
-      authUser.user_metadata?.full_name ||
-      authUser.user_metadata?.name ||
-      null,
+      authUser.user_metadata?.full_name ??
+      authUser.user_metadata?.name ??
+      undefined,
     avatar_url:
-      authUser.user_metadata?.avatar_url ||
-      authUser.user_metadata?.picture ||
-      null,
+      authUser.user_metadata?.avatar_url ??
+      authUser.user_metadata?.picture ??
+      undefined,
   };
 
   return createUserProfile(userData);
