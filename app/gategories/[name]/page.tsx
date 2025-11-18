@@ -42,11 +42,11 @@ const parseTags = (tags: BlogPost["tags"]) => {
 };
 
 interface CategoryPageProps {
-  params: { name: string };
+  params: Promise<{ name: string }>;
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { name } = params;
+  const { name } = await params;
   const categoryName = decodeURIComponent(name);
 
   const supabase = createServerClient();
@@ -56,7 +56,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     .select("*")
     .eq("published", true)
     .order("created_at", { ascending: false });
-
   if (error) {
     console.error("获取文章失败:", error);
   }

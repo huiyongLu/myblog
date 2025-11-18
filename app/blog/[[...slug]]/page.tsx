@@ -6,11 +6,12 @@ const supabase = createServerClient();
 export const dynamic = "force-dynamic";
 
 interface PostProps {
-  params: { slug?: string[] };
+  params: Promise<{ slug?: string[] }>;
 }
 
 export default async function PostPage({ params }: PostProps) {
-  const slugSegments = params.slug?.filter(Boolean);
+  const { slug: slugParam } = await params;
+  const slugSegments = slugParam?.filter(Boolean);
 
   if (!slugSegments?.length) {
     redirect("/");
