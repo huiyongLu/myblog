@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 
-const supabase = createServerClient();
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type BlogPost = {
   id: string;
@@ -40,6 +42,7 @@ const parseTags = (tags: BlogPost["tags"]) => {
 };
 
 export default async function Home() {
+  const supabase = createServerClient();
   const { data, error } = await supabase
     .from("posts")
     .select("*")
