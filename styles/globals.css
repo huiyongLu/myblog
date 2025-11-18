@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@tailwind utilities;
+/* styles/globals.css */
+:root {
+  /* 浅色主题变量 */
+  --bg-color: #ffffff;
+  --text-color: #1e293b;
+  --card-bg: #f8fafc;
+  --border-color: #e2e8f0;
+  --primary-color: #3b82f6;
+  --surface-bg: rgba(255, 255, 255, 0.92);
+  --surface-border: rgba(217, 180, 130, 0.45);
+  --surface-shadow: 0 12px 32px rgba(209, 178, 116, 0.18);
+  --surface-text: #334155;
+  --page-bg: #f7eddc;
+  --grid-line: rgba(205, 180, 140, 0.28);
+  --grid-size: 48px;
+  --glow-primary: rgba(255, 184, 108, 0.28);
+  --glow-secondary: rgba(238, 174, 120, 0.22);
+  --card-soft-bg: rgba(255, 255, 255, 0.92);
+  --card-soft-border: rgba(217, 180, 130, 0.45);
+  --card-soft-shadow: 0 18px 36px rgba(211, 187, 148, 0.2);
+  --muted-text: rgba(71, 85, 105, 0.72);
+}
+
+/* 暗黑主题变量（通过 .dark 类名触发） */
+.dark:root {
+  --bg-color: #060e1f;
+  --text-color: #dbe7ff;
+  --card-bg: rgba(15, 23, 42, 0.5);
+  --border-color: rgba(56, 83, 140, 0.35);
+  --primary-color: #60a5fa;
+  --surface-bg: rgba(15, 23, 42, 0.72);
+  --surface-border: rgba(51, 65, 85, 0.6);
+  --surface-shadow: 0 24px 48px rgba(15, 23, 42, 0.45);
+  --surface-text: #e2e8f0;
+  --page-bg: #060e1f;
+  --grid-line: rgba(72, 118, 255, 0.18);
+  --grid-size: 48px;
+  --glow-primary: rgba(14, 165, 233, 0.28);
+  --glow-secondary: rgba(59, 130, 246, 0.22);
+  --card-soft-bg: rgba(15, 23, 42, 0.65);
+  --card-soft-border: rgba(37, 99, 235, 0.35);
+  --card-soft-shadow: 0 30px 60px rgba(2, 12, 33, 0.55);
+  --muted-text: rgba(148, 163, 184, 0.75);
+}
+
+/* 全局应用主题变量 */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.theme-transition::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--page-bg);
+  clip-path: circle(0% at 95% 5%);
+  animation: theme-sweep 0.65s ease forwards;
+}
+
+@keyframes theme-sweep {
+  to {
+    clip-path: circle(200% at 0% 100%);
+  }
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}

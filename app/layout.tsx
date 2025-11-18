@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist } from "next/font/google";
+import Nav from "@/components/nav";
+import { AuthProvider } from "@/contexts/AuthContext";
+import "../styles/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+}) as { variable: string };
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,9 +22,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} antialiased bg-[#f7eddc] text-slate-800 transition-colors duration-300 dark:bg-[#060e1f] dark:text-slate-100`}
       >
-        {children}
+        <AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <Nav />
+            <main className="flex-1">{children}</main>
+            <footer
+              className="border-t py-6 text-xs transition-colors duration-300"
+              style={{
+                backgroundColor: "var(--surface-bg)",
+                borderColor: "var(--surface-border)",
+                color: "var(--surface-text)",
+              }}
+            >
+              <div className="container mx-auto px-4 text-center">
+                © {new Date().getFullYear()} My Tech Blog. All rights reserved.
+              </div>
+            </footer>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

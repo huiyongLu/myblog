@@ -39,17 +39,31 @@ const parseTags = (tags: BlogPost["tags"]) => {
     .slice(0, 6);
 };
 
-export default async function Home() {
+interface CategoryPageProps {
+  params: Promise<{ name: string }>;
+}
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { name } = await params;
+  const categoryName = decodeURIComponent(name);
+
   const { data, error } = await supabase
     .from("posts")
     .select("*")
     .eq("published", true)
     .order("created_at", { ascending: false });
+
   if (error) {
     console.error("获取文章失败:", error);
   }
 
-  const posts = (data as BlogPost[] | null) ?? [];
+  const allPosts = (data as BlogPost[] | null) ?? [];
+
+  // 筛选出包含该分类标签的文章
+  const posts = allPosts.filter((post) => {
+    const tags = parseTags(post.tags);
+    return tags.includes(categoryName);
+  });
 
   return (
     <div className="relative isolate overflow-hidden transition-colors duration-500">
@@ -85,29 +99,23 @@ export default async function Home() {
                 color: "var(--muted-text)",
               }}
             >
-              Web3 · 开源 · 分享
+              分类 · {categoryName}
             </span>
-            <h1 className="text-4xl font-semibold text-slate-800 transition-colors duration-500 dark:text-white sm:text-5xl">
-              探索区块链与前端的交汇
+            <h1 className="text-4xl font-semibold text-slate-800 transition-colors duration-500 dark:text-slate-100 sm:text-5xl">
+              {categoryName}
             </h1>
             <p className="text-base leading-relaxed text-(--muted-text) transition-colors duration-500 sm:text-lg">
-              记录去中心化应用的构建心得、工程实践与个人思考，从概念到落地，与你一起穿梭于技术宇宙。
+              共找到 {posts.length} 篇相关文章
             </p>
           </div>
           <div className="grid gap-4 text-right text-sm text-(--muted-text)">
             <div>
-              <span className="block text-(--muted-text)">累计文章</span>
-              <span className="text-3xl font-semibold text-slate-800 transition-colors duration-500 dark:text-slate-100">
-                {posts.length}
-              </span>
-            </div>
-            <div>
-              <span className="block text-(--muted-text)">最新更新</span>
-              <span className="text-lg text-slate-700 transition-colors duration-500 dark:text-slate-200">
-                {posts[0]
-                  ? new Date(posts[0].created_at).toLocaleDateString()
-                  : "--"}
-              </span>
+              <Link
+                href="/gategories"
+                className="text-sky-600 transition hover:text-sky-700 hover:underline dark:text-sky-300 dark:hover:text-sky-200"
+              >
+                ← 返回分类
+              </Link>
             </div>
           </div>
         </section>
@@ -176,112 +184,9 @@ export default async function Home() {
                   borderColor: "var(--card-soft-border)",
                 }}
               >
-                暂无文章，稍后再来看看新的内容吧。
+                该分类下暂无文章，稍后再来看看新的内容吧。
               </div>
             )}
-          </div>
-
-          <div className="mt-10 flex items-center justify-center gap-4 text-(--muted-text)">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border text-lg transition hover:border-sky-400 hover:text-sky-500 dark:hover:border-sky-500 dark:hover:text-sky-300"
-              style={{
-                borderColor: "var(--card-soft-border)",
-                backgroundColor: "var(--card-soft-bg)",
-              }}
-              aria-label="上一页"
-            >
-              ‹
-            </button>
-            <span
-              className="rounded-full border px-4 py-1 text-sm text-sky-600 transition-colors duration-500 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-200"
-              style={{
-                borderColor: "var(--card-soft-border)",
-                backgroundColor: "var(--card-soft-bg)",
-              }}
-            >
-              第 1 页
-            </span>
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border text-lg transition hover:border-sky-400 hover:text-sky-500 dark:hover:border-sky-500 dark:hover:text-sky-300"
-              style={{
-                borderColor: "var(--card-soft-border)",
-                backgroundColor: "var(--card-soft-bg)",
-              }}
-              aria-label="下一页"
-            >
-              ›
-            </button>
-          </div>
-        </section>
-
-        <section
-          className="mt-16 rounded-3xl border px-8 py-10 backdrop-blur transition-colors duration-500"
-          style={{
-            backgroundColor: "var(--card-soft-bg)",
-            borderColor: "var(--card-soft-border)",
-            boxShadow: "var(--card-soft-shadow)",
-          }}
-        >
-          <div className="grid gap-10 text-sm text-(--muted-text) md:grid-cols-3">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800 transition-colors duration-500 dark:text-sky-300">
-                关于我们
-              </h3>
-              <p className="mt-4 leading-relaxed text-(--muted-text)">
-                分享技术见解、记录学习历程，专注
-                Web3、去中心化金融与前端工程实践，让知识在社区中持续流动。
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800 transition-colors duration-500 dark:text-sky-300">
-                快速链接
-              </h3>
-              <ul className="mt-4 space-y-2 text-(--muted-text)">
-                <li>
-                  <Link
-                    href="/"
-                    className="transition hover:text-sky-600 hover:underline dark:hover:text-sky-200"
-                  >
-                    首页
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/gategories"
-                    className="transition hover:text-sky-600 hover:underline dark:hover:text-sky-200"
-                  >
-                    分类
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/blog"
-                    className="transition hover:text-sky-600 hover:underline dark:hover:text-sky-200"
-                  >
-                    新文章
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800 transition-colors duration-500 dark:text-sky-300">
-                联系方式
-              </h3>
-              <ul className="mt-4 space-y-2 text-(--muted-text)">
-                <li>邮箱：yuyi.gz@163.com；yuyigz@gmail.com</li>
-                <li>
-                  GitHub：{" "}
-                  <a
-                    href="https://github.com/yy9331"
-                    className="transition hover:text-sky-600 hover:underline dark:hover:text-sky-200"
-                  >
-                    github.com/yy9331
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
         </section>
       </div>
