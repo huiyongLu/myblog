@@ -5,12 +5,12 @@ import type { UpdateUserProfileInput } from "@/types/user";
 
 // GET - 根据 ID 查询单个用户
 type UserRouteContext = {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 };
 
 export async function GET(request: NextRequest, context: UserRouteContext) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     const supabase = createServerClient();
 
     const { data, error } = await supabase
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, context: UserRouteContext) {
 // PUT - 更新用户信息
 export async function PUT(request: NextRequest, context: UserRouteContext) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     const body: UpdateUserProfileInput = await request.json();
     const supabase = createServerClient();
 
@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest, context: UserRouteContext) {
 // DELETE - 删除用户
 export async function DELETE(request: NextRequest, context: UserRouteContext) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     const supabase = createServerClient();
 
     const { error } = await supabase.from("users").delete().eq("id", id);

@@ -1,13 +1,23 @@
+import { notFound, redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 
 const supabase = createServerClient();
 
+export const dynamic = "force-dynamic";
+
 interface PostProps {
-  params: { slug: string[] };
+  params: { slug?: string[] };
 }
 
 export default async function PostPage({ params }: PostProps) {
-  const { slug } = await params;
+  const slugSegments = params.slug?.filter(Boolean);
+
+  if (!slugSegments?.length) {
+    redirect("/");
+  }
+
+  const slug = slugSegments.join("/");
+
   const { data: post, error } = await supabase
     .from("posts")
     .select("*")
@@ -15,19 +25,24 @@ export default async function PostPage({ params }: PostProps) {
     .eq("published", true)
     .single();
 
-  if (error) {
-    return <div className="container mx-auto py-10">文章不存在</div>;
+  if (error || !post) {
+    console.error("获取文章失败:", error);
+    notFound();
   }
 
   return (
-    <article className="container mx-auto py-10 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-      <p className="text-gray-500 mb-6">
-        {new Date(post.created_at).toLocaleDateString()}
-      </p>
-      <div className="prose dark:prose-invert max-w-none">
-        {/* 实际项目中建议使用 markdown 渲染库（如 react-markdown） */}
-        <p>{post.content}</p>
+    <article className="mx-auto max-w-3xl px-4 py-10 sm:px-0">
+      <header className="mb-8">
+        <p className="text-sm text-(--muted-text)">
+          {new Date(post.created_at).toLocaleDateString("zh-CN")}
+        </p>
+        <h1 className="mt-3 text-3xl font-bold text-slate-900 transition-colors duration-500 dark:text-white">
+          {post.title}
+        </h1>
+      </header>
+
+      <div className="prose prose-slate max-w-none dark:prose-invert">
+        <p>{post.content ?? "这篇文章暂无内容，稍后再来看看吧。"}</p>
       </div>
     </article>
   );
