@@ -40,11 +40,11 @@ const parseTags = (tags: BlogPost["tags"]) => {
 };
 
 interface CategoryPageProps {
-  params: Promise<{ name: string }>;
+  params: { name: string };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { name } = await params;
+  const { name } = params;
   const categoryName = decodeURIComponent(name);
 
   const { data, error } = await supabase
