@@ -12,27 +12,46 @@ import { Button, Input, Modal, message, Space } from "antd";
 import { GiftOutlined, SendOutlined } from "@ant-design/icons";
 
 interface TipButtonProps {
-  recipientAddress: string; // 接收打赏的地址
-  postTitle?: string; // 文章标题，用于显示
+  recipientAddress: string;
+  postTitle?: string;
 }
 
 export function TipButton({ recipientAddress, postTitle }: TipButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [lastHash, setLastHash] = useState<string | undefined>();
-  const { address, isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
 
   const {
     data: hash,
     sendTransaction,
     isPending: isSending,
     error: sendError,
+    reset: resetSendTransaction,
   } = useSendTransaction();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    isError: isConfirmationError,
+    data: receipt,
+    error: confirmationError,
+  } = useWaitForTransactionReceipt({
+    hash: hash || undefined,
+    chainId: chainId || undefined,
+    query: {
+      enabled: !!hash, // 只有在有 hash 时才启用查询
+      retry: 10, // 重试次数
+      retryDelay: 2000, // 重试延迟（毫秒）
+      refetchInterval: (query) => {
+        // 如果交易已确认或出错，停止轮询
+        if (query.state.status === "success" || query.state.status === "error") {
+          return false;
+        }
+        // 否则每 2 秒轮询一次
+        return 2000;
+      },
+    },
+  });
 
   const handleTip = async () => {
     if (!isConnected) {
@@ -57,37 +76,62 @@ export function TipButton({ recipientAddress, postTitle }: TipButtonProps) {
     }
   };
 
-  // 跟踪交易哈希变化
-  useEffect(() => {
-    if (hash && hash !== lastHash) {
-      setLastHash(hash);
-    }
-  }, [hash, lastHash]);
-
-  // 交易状态反馈
   useEffect(() => {
     if (isSending && hash) {
       message.loading({ content: "正在发送交易...", key: "tip", duration: 0 });
-    } else if (isConfirming && hash) {
+    } else if (isConfirming && hash && !isConfirmed) {
       message.loading({ content: "等待交易确认...", key: "tip", duration: 0 });
+    } else if (!isSending && !isConfirming && hash) {
+      message.destroy("tip");
     }
-  }, [isSending, isConfirming, hash]);
+  }, [isSending, isConfirming, hash, isConfirmed]);
 
-  // 交易成功反馈
   useEffect(() => {
-    if (isConfirmed && hash) {
+    if (hash) {
+      console.log("交易哈希:", hash);
+      console.log("交易状态:", {
+        isSending,
+        isConfirming,
+        isConfirmed,
+        isConfirmationError,
+        receipt: receipt ? "已获取" : "未获取",
+      });
+    }
+  }, [hash, isSending, isConfirming, isConfirmed, isConfirmationError, receipt]);
+
+  useEffect(() => {
+    if (isConfirmed && hash && receipt) {
+      console.log("交易确认成功:", { hash, receipt });
+      message.destroy("tip");
       message.success({
         content: `打赏成功！感谢您的支持 🎉`,
-        key: "tip",
+        key: "tip-success",
         duration: 5,
       });
-      setIsModalOpen(false);
-      setAmount("");
-      setLastHash(undefined);
+      const timer = setTimeout(() => {
+        setIsModalOpen(false);
+        setAmount("");
+        // 重置交易状态，以便进行下一次交易
+        resetSendTransaction();
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, [isConfirmed, hash]);
+  }, [isConfirmed, hash, receipt, resetSendTransaction]);
 
-  // 交易错误反馈
+  useEffect(() => {
+    if (isConfirmationError && hash) {
+      console.error("交易确认错误:", confirmationError);
+      message.destroy("tip");
+      message.error({
+        content: confirmationError
+          ? `交易确认失败: ${confirmationError.message}`
+          : "交易确认失败，请检查交易状态",
+        key: "tip-error",
+        duration: 5,
+      });
+    }
+  }, [isConfirmationError, hash, confirmationError]);
+
   useEffect(() => {
     if (sendError) {
       message.error({
@@ -238,15 +282,17 @@ export function TipButton({ recipientAddress, postTitle }: TipButtonProps) {
                 block
                 size="large"
                 onClick={handleTip}
-                loading={isSending || isConfirming}
-                disabled={!amount || parseFloat(amount) <= 0}
+                loading={isSending || (isConfirming && !isConfirmed)}
+                disabled={!amount || parseFloat(amount) <= 0 || isConfirmed}
                 className="rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
                 style={{
                   background:
                     "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
                 }}
               >
-                {isSending
+                {isConfirmed
+                  ? "打赏成功！"
+                  : isSending
                   ? "发送中..."
                   : isConfirming
                   ? "确认中..."

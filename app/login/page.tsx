@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input, Form, message } from "antd";
 import { GithubOutlined, MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,8 +15,19 @@ export default function LoginPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string>("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, signUp, signInWithGitHub, resendConfirmationEmail } =
     useAuth();
+
+  // 检查 URL 参数中的错误信息
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      message.error(decodeURIComponent(error));
+      // 清除 URL 中的错误参数
+      router.replace("/login", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (values: { email: string; password: string }) => {
     setLoading(true);
@@ -161,10 +172,26 @@ export default function LoginPage() {
     try {
       const { error } = await signInWithGitHub();
       if (error) {
-        message.error(error.message);
+        // 如果错误信息包含配置提示，显示更详细的错误
+        const errorMessage = error.message || "GitHub 登录失败";
+
+        if (
+          errorMessage.includes("未配置") ||
+          errorMessage.includes("not enabled")
+        ) {
+          message.error({
+            content: errorMessage,
+            duration: 8,
+          });
+        } else {
+          message.error(errorMessage);
+        }
         setLoading(false);
       }
-    } catch {
+      // 如果没有错误，说明重定向已启动，不需要设置 loading 为 false
+      // 因为页面即将重定向到 GitHub
+    } catch (err) {
+      console.error("GitHub 登录异常:", err);
       message.error("GitHub 登录失败，请重试");
       setLoading(false);
     }

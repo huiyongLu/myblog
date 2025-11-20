@@ -60,7 +60,10 @@ const Nav = () => {
         borderColor: "var(--surface-border)",
         boxShadow: "var(--surface-shadow)",
       }}
-      onClick={(e) => e.stopPropagation()} // 阻止整个下拉内容区域的点击事件冒泡
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }} // 阻止整个下拉内容区域的点击事件冒泡
     >
       <div
         className="flex items-center gap-3 border-b pb-4 transition-colors duration-300"

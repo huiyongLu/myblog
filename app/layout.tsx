@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+// 必须在所有 antd 组件导入之前导入补丁
+import "@/lib/antd-patch";
+import "../styles/globals.css";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import Nav from "@/components/nav";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Providers } from "@/components/providers";
-import "../styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,27 +20,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-[#f7eddc] text-slate-800 transition-colors duration-300 dark:bg-[#060e1f] dark:text-slate-100">
-        <Providers>
-          <AuthProvider>
-            <div className="flex min-h-screen flex-col">
-              <Nav />
-              <main className="flex-1">{children}</main>
-              <footer
-                className="border-t py-6 text-xs transition-colors duration-300"
-                style={{
-                  backgroundColor: "var(--surface-bg)",
-                  borderColor: "var(--surface-border)",
-                  color: "var(--surface-text)",
-                }}
-              >
-                <div className="container mx-auto px-4 text-center">
-                  © {new Date().getFullYear()} My Tech Blog. All rights
-                  reserved.
-                </div>
-              </footer>
-            </div>
-          </AuthProvider>
-        </Providers>
+        <AntdRegistry>
+          <Providers>
+            <AuthProvider>
+              <div className="flex min-h-screen flex-col">
+                <Nav />
+                <main className="flex-1">{children}</main>
+                <footer
+                  className="border-t py-6 text-xs transition-colors duration-300"
+                  style={{
+                    backgroundColor: "var(--surface-bg)",
+                    borderColor: "var(--surface-border)",
+                    color: "var(--surface-text)",
+                  }}
+                >
+                  <div className="container mx-auto px-4 text-center">
+                    © {new Date().getFullYear()} My Tech Blog. All rights
+                    reserved.
+                  </div>
+                </footer>
+              </div>
+            </AuthProvider>
+          </Providers>
+        </AntdRegistry>
       </body>
     </html>
   );

@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/nextjs-registry": "^1.2.0",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@clerk/nextjs": "^6.35.1",
     "@rainbow-me/rainbowkit": "^2.2.9",

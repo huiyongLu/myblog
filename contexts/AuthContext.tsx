@@ -297,14 +297,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGitHub = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: "user:email", // 请求邮箱权限，允许访问用户的邮箱地址
-      },
-    });
-    return { data, error };
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          scopes: "user:email", // 请求邮箱权限，允许访问用户的邮箱地址
+        },
+      });
+
+      if (error) {
+        console.error("GitHub 登录错误:", error);
+        // 提供更友好的错误信息
+        let errorMessage = error.message;
+
+        // 检查是否是 provider 未启用的错误
+        if (
+          error.message?.includes("Unsupported provider") ||
+          error.message?.includes("provider is not enabled") ||
+          error.error_description?.includes("provider is not enabled")
+        ) {
+          errorMessage =
+            "GitHub 登录未配置。请联系管理员或在 Supabase Dashboard 中启用 GitHub 提供商。";
+        } else if (error.message?.includes("redirect_uri_mismatch")) {
+          errorMessage =
+            "重定向 URL 配置错误。请检查 Supabase 中的重定向 URL 设置。";
+        }
+
+        return {
+          data: null,
+          error: {
+            ...error,
+            message: errorMessage,
+          },
+        };
+      }
+
+      return { data, error: null };
+    } catch (err) {
+      console.error("GitHub 登录异常:", err);
+      return {
+        data: null,
+        error: {
+          name: "GitHubSignInError",
+          message:
+            err instanceof Error
+              ? err.message
+              : "GitHub 登录时发生错误，请重试",
+        },
+      };
+    }
   };
 
   const signOut = async () => {
