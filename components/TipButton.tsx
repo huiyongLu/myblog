@@ -44,7 +44,10 @@ export function TipButton({ recipientAddress, postTitle }: TipButtonProps) {
       retryDelay: 2000, // 重试延迟（毫秒）
       refetchInterval: (query) => {
         // 如果交易已确认或出错，停止轮询
-        if (query.state.status === "success" || query.state.status === "error") {
+        if (
+          query.state.status === "success" ||
+          query.state.status === "error"
+        ) {
           return false;
         }
         // 否则每 2 秒轮询一次
@@ -97,7 +100,14 @@ export function TipButton({ recipientAddress, postTitle }: TipButtonProps) {
         receipt: receipt ? "已获取" : "未获取",
       });
     }
-  }, [hash, isSending, isConfirming, isConfirmed, isConfirmationError, receipt]);
+  }, [
+    hash,
+    isSending,
+    isConfirming,
+    isConfirmed,
+    isConfirmationError,
+    receipt,
+  ]);
 
   useEffect(() => {
     if (isConfirmed && hash && receipt) {
